@@ -1,20 +1,19 @@
-class Solution {
-   ArrayList<Integer> primes ;
+class Solution{
+    boolean[] prime;
     int [] id;
-    ArrayList<ArrayList<Integer>> next;;
-    ArrayList<Long> nonPrime ;
-    long primePathTotal = 0;
+    List<Integer>[]adj;;
+    long nonPrime[] ;
+    long primePathTotal = 0L;
 
     public long countPaths(int n, int[][] edges) {
-        primes = eratosthenes(n);
+        prime = eratosthenes(n);
         id = new int [n+1];
-        next=new ArrayList<>();
-        nonPrime = new ArrayList<>();
+        adj=new ArrayList[n+1];
+        nonPrime = new long[n+1];
 
         for(int i=0;i<=n;i++) {
             id[i] = i;
-            next.add(new ArrayList<>());
-            nonPrime.add(0L);
+            adj[i] = new ArrayList<>();
         }
             //initiate 0 to n value;
         //iterate edges and update parent info to id
@@ -22,8 +21,8 @@ class Solution {
             int p=edges[i][0];
             int q=edges[i][1];
             //find all the nearby point for each of point
-            next.get(p).add(q);
-            next.get(q).add(p);
+            adj[p].add(q);
+            adj[q].add(p);
             // union
             if(!isPrime(p) && !isPrime(q))
                 if(find(p)!=find(q))
@@ -34,28 +33,25 @@ class Solution {
 
         int key;
         for(int i=1;i<=n;i++){
-            key = id[i];
-            nonPrime.set(key,nonPrime.get(key)+1);
+            key = find(i);//fidn key
+            nonPrime[key]++;
         }
-        for(int i=1;i<=n;i++){
-            key = id[i];
-            nonPrime.set(i,nonPrime.get(key));
-        }
+
 
         //Iterate through all nearly by non prime point to see how may m1 for each of it;
 
-        int prime,total=0,pathValue=0;
+        long total=0,pathValue=0;
         ArrayList<Long> path;
 
         //iterate through the arrayList and id list
-        for(int j=0; j<primes.size();j++){
+        for(int j=1; j<=n;j++){
             total=0;
             pathValue=0;
-            prime=primes.get(j);
+            if(!prime[j]) continue;
             path = new ArrayList<>();
-            for(int nearestVal :next.get(prime))
+            for(int nearestVal :adj[j])
                 if(!isPrime(nearestVal)) {
-                    long value = nonPrime.get(nearestVal);
+                    long value = nonPrime[find(nearestVal)];
                     path.add(value);
                     total+= value;
                 }
@@ -72,9 +68,9 @@ class Solution {
 
     //find
     int find(int x){
-        if(x!=id[x])
-            id[x]=find(id[x]);
-        return id[x];
+        while(x!=id[x])
+            x=id[x];
+        return x;
     }
     //Union
     void union(int p,int q){
@@ -85,15 +81,15 @@ class Solution {
     }
 
     //to see all prime numbers for num<=n;
-    ArrayList<Integer> eratosthenes(int n)
+    boolean[] eratosthenes(int n)
     {
         // Create a boolean array "prime[0..n]" and
         // initialize all entries it as true. A value in
         // prime[i] will finally be false if i is Not a
         // prime, else true.
         boolean prime[] = new boolean[n + 1];
-        ArrayList<Integer> arraylist = new ArrayList<>();
-        for (int i = 0; i <= n; i++)
+        prime[0]=prime[1]=false;
+        for (int i = 2; i <= n; i++)
             prime[i] = true;
 
         for (int p = 2; p * p <= n; p++) {
@@ -105,18 +101,13 @@ class Solution {
             }
         }
 
-        // Print all prime numbers
-        for (int i = 2; i <= n; i++) {
-            if (prime[i] == true)
-                arraylist.add(i);
-        }
-        return arraylist;
+
+        return prime;
     }
     // prime return boolean
     boolean isPrime(int x){
-        return primes.contains(x);
+        return prime[x];
     }
 
-    //prime number
-}
 
+}
